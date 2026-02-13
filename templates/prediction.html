@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Prediction - EcoMonitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    document.getElementById('loader').style.display = 'flex';
+                });
+            }
+        });
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="loader"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+        <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-white mt-3">Predicting AQI...</p>
+    </div>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm"
+        style="background: rgba(17, 25, 40, 0.75) !important; backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="/"><i
+                    class="fas fa-leaf me-2 text-success"></i>EcoMonitor</a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/">Home</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/image">Image
+                            Analysis</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/report">Report
+                            Analysis</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass-warning mx-1 mb-2 mb-lg-0"
+                            href="/prediction">AQI Prediction</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0"
+                            href="/dashboard">Dashboard</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card hero-glass">
+                    <div class="card-header p-4 text-center border-bottom border-secondary"
+                        style="background: transparent !important;">
+                        <h2 class="mb-0 fw-bold text-white">
+                            <i class="fas fa-wind me-2 text-warning"></i>Air Quality Index Prediction
+                        </h2>
+                    </div>
+                    <div class="card-body p-5">
+                        <form method="post" class="row g-4">
+                            <div class="col-md-4">
+                                <label for="co" class="form-label fw-bold text-white">CO (Carbon Monoxide)</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm text-white" id="co"
+                                    name="co" required
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="no2" class="form-label fw-bold text-white">NO2 (Nitrogen Dioxide)</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm text-white" id="no2"
+                                    name="no2" required
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="so2" class="form-label fw-bold text-white">SO2 (Sulfur Dioxide)</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm text-white" id="so2"
+                                    name="so2" required
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="o3" class="form-label fw-bold text-white">O3 (Ozone)</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm text-white" id="o3"
+                                    name="o3" required
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="pm25" class="form-label fw-bold text-white">PM 2.5</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm text-white" id="pm25"
+                                    name="pm25" required
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="pm10" class="form-label fw-bold text-white">PM 10</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm text-white" id="pm10"
+                                    name="pm10" required
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                            </div>
+
+                            <div class="col-12 mt-5 text-center">
+                                <button type="submit"
+                                    class="btn btn-glass btn-glass-warning btn-lg px-5 rounded-pill shadow-sm"><i
+                                        class="fas fa-calculator me-2"></i>Predict AQI</button>
+                            </div>
+                        </form>
+
+                        {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                        <div class="alert alert-danger mt-3 shadow-sm border-0 rounded-3">
+                            {{ messages[0] }}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+
+                        {% if prediction %}
+                        <div class="mt-5 text-center result-box p-4 rounded-3"
+                            style="background: rgba(255,255,255,0.1); backdrop-filter: blur(5px);">
+                            <h4 class="text-white mb-3">Predicted AQI</h4>
+                            <div class="display-1 fw-bold mb-3
+                                {% if prediction <= 50 %}text-success
+                                {% elif prediction <= 100 %}text-warning
+                                {% else %}text-danger{% endif %}">
+                                {{ "%.2f"|format(prediction) }}
+                            </div>
+                            <p class="lead fw-bold badge rounded-pill px-4 py-2 fs-5
+                                {% if prediction <= 50 %}bg-success text-white
+                                {% elif prediction <=100 %}bg-warning text-white
+                                {% else %}bg-danger text-white{% endif %}">
+                                Status:
+                                {% if prediction <= 50 %}Good {% elif prediction <=100 %}Moderate {% elif prediction
+                                    <=200 %}Unhealthy {% elif prediction <=300 %}Very Unhealthy {% else %}Hazardous{%
+                                    endif %} </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

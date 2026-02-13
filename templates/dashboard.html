@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EcoMonitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm"
+        style="background: rgba(17, 25, 40, 0.75) !important; backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="/"><i
+                    class="fas fa-leaf me-2 text-success"></i>EcoMonitor</a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/">Home</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/image">Image
+                            Analysis</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/report">Report
+                            Analysis</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/prediction">AQI
+                            Prediction</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass-success mx-1 mb-2 mb-lg-0 fw-bold"
+                            href="/dashboard">Dashboard</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h2 class="mb-4 fw-bold text-primary"><i class="fas fa-chart-line me-2"></i>Environmental Dashboard</h2>
+
+        <!-- Top Stats Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card dashboard-card bg-primary text-white h-100 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Reports</h5>
+                        <h2 class="display-4 fw-bold">{{ data.report_counts | sum }}</h2>
+                        <i class="fas fa-clipboard-list fa-3x opacity-25 position-absolute end-0 bottom-0 m-3"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card dashboard-card bg-success text-white h-100 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Images Analyzed</h5>
+                        <h2 class="display-4 fw-bold">{{ data.pollution_counts | sum }}</h2>
+                        <i class="fas fa-images fa-3x opacity-25 position-absolute end-0 bottom-0 m-3"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card dashboard-card bg-warning text-white h-100 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Latest AQI</h5>
+                        <h2 class="display-4 fw-bold">{{ "%.0f"|format(data.aqi_values[-1]) if data.aqi_values else
+                            "N/A" }}</h2>
+                        <i class="fas fa-wind fa-3x opacity-25 position-absolute end-0 bottom-0 m-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card h-100 hero-glass">
+                    <div class="card-header border-0 pt-4 px-4 pb-0" style="background: transparent !important;">
+                        <h5 class="fw-bold m-0 text-white"><i class="fas fa-chart-pie me-2 text-primary"></i>Pollution
+                            Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="pollutionPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100 hero-glass">
+                    <div class="card-header border-0 pt-4 px-4 pb-0" style="background: transparent !important;">
+                        <h5 class="fw-bold m-0 text-white"><i class="fas fa-chart-line me-2 text-info"></i>AQI Trend
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="aqiLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 & Table -->
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card h-100 hero-glass">
+                    <div class="card-header border-0 pt-4 px-4 pb-0" style="background: transparent !important;">
+                        <h5 class="fw-bold m-0 text-white"><i class="fas fa-chart-bar me-2 text-success"></i>Report
+                            Issues</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="reportBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 hero-glass">
+                    <div class="card-header border-0 pt-4 px-4 pb-3" style="background: transparent !important;">
+                        <h5 class="fw-bold m-0 text-white"><i class="fas fa-history me-2 text-warning"></i>Recent
+                            Activity</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle text-white">
+                                <thead style="background: rgba(255,255,255,0.1); color: #cbd5e1;">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Type</th>
+                                        <th>Result</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in data.recent_activity %}
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                        <td>#{{ row[0] }}</td>
+                                        <td><span class="badge bg-primary">{{ row[1] }}</span></td>
+                                        <td>{{ row[2] }}</td>
+                                        <td class="text-white-50 small">{{ row[3].strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-white-50 py-3">No activity found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+
+
+    <script id="pollution-labels-data" type="application/json">
+        {{ data.pollution_labels | default ([]) | tojson }}
+    </script>
+    <script id="pollution-counts-data" type="application/json">
+        {{ data.pollution_counts | default ([]) | tojson }}
+    </script>
+    <script id="aqi-labels-data" type="application/json">
+        {{ data.aqi_labels | default ([]) | tojson }}
+    </script>
+    <script id="aqi-values-data" type="application/json">
+        {{ data.aqi_values | default ([]) | tojson }}
+    </script>
+    <script id="report-labels-data" type="application/json">
+        {{ data.report_labels | default ([]) | tojson }}
+    </script>
+    <script id="report-counts-data" type="application/json">
+        {{ data.report_counts | default ([]) | tojson }}
+    </script>
+
+    <script>
+        // Define data from Jinja2 templates via JSON script blocks
+        const pollutionLabels = JSON.parse(document.getElementById('pollution-labels-data').textContent);
+        const pollutionCounts = JSON.parse(document.getElementById('pollution-counts-data').textContent);
+        const aqiLabels = JSON.parse(document.getElementById('aqi-labels-data').textContent);
+        const aqiValues = JSON.parse(document.getElementById('aqi-values-data').textContent);
+        const reportLabels = JSON.parse(document.getElementById('report-labels-data').textContent);
+        const reportCounts = JSON.parse(document.getElementById('report-counts-data').textContent);
+
+        // Common Chart Options for Dark Mode
+        Chart.defaults.color = '#e2e8f0';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+        // Pie Chart
+        const ctxPie = document.getElementById('pollutionPieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: pollutionLabels,
+                datasets: [{
+                    data: pollutionCounts,
+                    backgroundColor: [
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(241, 196, 15, 0.8)',
+                        'rgba(231, 76, 60, 0.8)',
+                        'rgba(155, 89, 182, 0.8)',
+                        'rgba(52, 73, 94, 0.8)'
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 1,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#e2e8f0' } }
+                }
+            }
+        });
+
+        // Line Chart Gradient
+        const ctxLine = document.getElementById('aqiLineChart').getContext('2d');
+        const gradientLine = ctxLine.createLinearGradient(0, 0, 0, 400);
+        gradientLine.addColorStop(0, 'rgba(52, 152, 219, 0.5)');
+        gradientLine.addColorStop(1, 'rgba(52, 152, 219, 0.0)');
+
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: aqiLabels,
+                datasets: [{
+                    label: 'Predicted AQI',
+                    data: aqiValues,
+                    borderColor: '#3498db',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#e2e8f0',
+                    pointBorderColor: '#3498db',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: gradientLine
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#cbd5e1' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#cbd5e1' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Bar Chart Gradient
+        const ctxBar = document.getElementById('reportBarChart').getContext('2d');
+        const gradientBar = ctxBar.createLinearGradient(0, 0, 0, 400);
+        gradientBar.addColorStop(0, '#1abc9c');
+        gradientBar.addColorStop(1, '#16a085');
+
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: reportLabels,
+                datasets: [{
+                    label: 'Reports',
+                    data: reportCounts,
+                    backgroundColor: gradientBar,
+                    borderRadius: 8,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#cbd5e1' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#cbd5e1' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

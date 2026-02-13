@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Analysis - EcoMonitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('form').addEventListener('submit', function () {
+                document.getElementById('loader').style.display = 'flex';
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div id="loader" class="loader-overlay">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Classifying Report...</div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm"
+        style="background: rgba(17, 25, 40, 0.75) !important; backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="/"><i
+                    class="fas fa-leaf me-2 text-success"></i>EcoMonitor</a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/">Home</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/image">Image
+                            Analysis</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass-primary mx-1 mb-2 mb-lg-0" href="/report">Report
+                            Analysis</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0" href="/prediction">AQI
+                            Prediction</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-glass mx-1 mb-2 mb-lg-0"
+                            href="/dashboard">Dashboard</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card hero-glass">
+                    <div class="card-header p-4 text-center border-bottom border-secondary"
+                        style="background: transparent !important;">
+                        <h2 class="mb-0 fw-bold text-white">
+                            <i class="fas fa-file-alt me-2 text-info"></i>Environmental Report Analysis
+                        </h2>
+                    </div>
+                    <div class="card-body p-5">
+                        <p class="text-light text-center mb-5 lead">Paste your environmental report or complaint below
+                            to auto-classify the issue.</p>
+
+                        <form method="post" class="mb-4">
+                            <div class="mb-4">
+                                <label for="report_text" class="form-label fw-bold text-white">Report Text</label>
+                                <textarea class="form-control p-3 shadow-sm text-white" id="report_text"
+                                    name="report_text" rows="6"
+                                    placeholder="e.g., There is black smoke coming from the factory..." required
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;"></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit"
+                                    class="btn btn-glass btn-glass-primary btn-lg rounded-pill shadow-sm"><i
+                                        class="fas fa-magic me-2"></i>Classify Report</button>
+                            </div>
+                        </form>
+
+                        {% if prediction %}
+                        <div class="mt-5 text-center result-box">
+                            <h3 class="mb-4 fw-bold text-white">Classification Result</h3>
+                            <div class="alert alert-info d-inline-block px-5 py-3 rounded-pill shadow border-0"
+                                style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); color: #93c5fd;">
+                                <h4 class="m-0"><i class="fas fa-tag me-2"></i>{{ prediction }}</h4>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
